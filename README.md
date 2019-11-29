@@ -11,7 +11,7 @@ This is the code for the compitition of NAIC
 ## Train
 step 1.
 modify config.py
-'''python 
+'''Python 
 _C.MODEL.NAME = 'mfn' # model to choose 'mfn|mgn|baseline'
 _C.MODEL.NAME = 'resnet50_ibn_a' # backbone to choose ''resnet50|resnet50_ibn_a|'
 _C.MODEL.PRETRAIN_PATH = '' # path to pretained model
@@ -20,7 +20,6 @@ _C.DATASETS.DATA_PATH = '' # path to dataset, which contains the train / query /
 _C.DATALOADER.NUM_INSTANCE = 4 # K
 _C.OUTPUT_DIR = '' # path to save log file and model weights
 
-end
 '''
 
 setp 2.
