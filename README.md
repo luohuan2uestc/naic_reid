@@ -9,9 +9,9 @@ This is the code for the compitition of NAIC
 
 
 ## Train
-step 1.
-modify config.py
-'''Python 
+step 1.  
+modify config.py  
+''' python 
 _C.MODEL.NAME = 'mfn' # model to choose 'mfn|mgn|baseline'
 _C.MODEL.NAME = 'resnet50_ibn_a' # backbone to choose ''resnet50|resnet50_ibn_a|'
 _C.MODEL.PRETRAIN_PATH = '' # path to pretained model
@@ -22,14 +22,14 @@ _C.OUTPUT_DIR = '' # path to save log file and model weights
 
 '''
 
-setp 2.
-run main.py
+setp 2.  
+run main.py  
 
 ## Test
-single model
-run inference.py
-multi models
-run inference_muti_model.py
+single model  
+run inference.py  
+multi models  
+run inference_muti_model.py  
 
 
 
