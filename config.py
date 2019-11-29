@@ -33,7 +33,7 @@ _C.MODEL.NAME = 'mfn'
 _C.MODEL.BACKBONE = 'resnet50_ibn_a'
 _C.MODEL.LAST_STRIDE = 1
 _C.MODEL.LABEL_SMOOTH = True
-_C.MODEL.PRETRAIN_PATH = 'C:/Users/xin/.torch/models/r50_ibn_a.pth'
+_C.MODEL.PRETRAIN_PATH = 'r50_ibn_a.pth'
 _C.MODEL.USE_DROPOUT = False
 # -----------------------------------------------------------------------------
 # INPUT
@@ -61,7 +61,7 @@ _C.DATASETS = CN()
 # List of the dataset names for training, as present in paths_catalog.py
 _C.DATASETS.NAMES = ('competition')
 # Root PATH to the dataset
-_C.DATASETS.DATA_PATH = r'E:\data\reid\dataset8'
+_C.DATASETS.DATA_PATH = r'dataset8'
 # PATH to train set
 _C.DATASETS.TRAIN_PATH = r'train'
 # PATH to query set
@@ -132,7 +132,7 @@ _C.TEST.RERANK = True
 # ---------------------------------------------------------------------------- #
 # Misc options
 # ---------------------------------------------------------------------------- #
-_C.OUTPUT_DIR = "E:/data/reid/output"
+_C.OUTPUT_DIR = "output"
 
 # Alias for easy usage
 cfg = _C
