@@ -5,7 +5,7 @@ This is the code for the compitition of NAIC
 * python==3.6
 * torch==1.0.0
 * numpy==1.17.4
-* torchvision
+* torchvision==0.2.0
 
 
 ## Train
