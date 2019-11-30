@@ -22,7 +22,7 @@ import shutil
 os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-features_save_path = r''
+features_save_path = r'features'
 
 
 # q_img_list = os.listdir(r'E:\data\reid\dataset6\query')
