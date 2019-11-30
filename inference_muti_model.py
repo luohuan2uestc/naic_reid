@@ -22,6 +22,8 @@ import shutil
 os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+features_save_path = r''
+
 
 # q_img_list = os.listdir(r'E:\data\reid\dataset6\query')
 # query_list = list()
@@ -104,7 +106,7 @@ def extract_feature(model,  transform, batch_size, model_name):
 
             all_feature.append(ff)
     all_feature = torch.cat(all_feature)
-    hickle.dump(all_feature.numpy(), r'E:\data\reid\features/%s.feature.hkl' % (model_name))
+    hickle.dump(all_feature.numpy(), os.path.join(features_save_path, r'%s.feature.hkl' % (model_name)))
 
 
 # def merge_feature_val(k1=20, k2=6, p=0.3, use_rerank=False):
@@ -146,7 +148,7 @@ def extract_feature(model,  transform, batch_size, model_name):
 
 def merge_feature_sample(k1=20, k2=6, p=0.3, use_rerank=False):
 
-    feature_files = [os.path.join(r'E:\data\reid\features', x) for x in os.listdir(r'E:\data\reid\features')]
+    feature_files = [os.path.join(feature_save_path, x) for x in os.listdir(feature_save_path)]
 
     ff = torch.FloatTensor(16246, 4096 * len(feature_files)).zero_()
     for i, feature_file in enumerate(feature_files):
