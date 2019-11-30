@@ -31,6 +31,6 @@ run inference.py
 multi models  
 run inference_muti_model.py  
 
-
+最终融合了两种0.6,0.5margin的mfn模型训练后期的模型，一共16个，下载百度云链接：链接: https://pan.baidu.com/s/1zlo-LwxGpPB6SYczp2K4wQ 提取码: bfkg
 
 
