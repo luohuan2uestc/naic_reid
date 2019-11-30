@@ -51,7 +51,7 @@ run inference_muti_model.py
 query_list = [os.path.join(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\query_b\query_b', x) for x in
                 os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\query_b\query_b')]
 gallery_list = [os.path.join(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b', x) for x in
-                os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b')]  # line 54-57
+                os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b')]  # line 56-59
 ```
 * 2.修改模型路径
 ```python
@@ -62,19 +62,15 @@ para_dict = torch.load(r'E:\data\reid\exp\hg/mfn_epoch238.pth') # line 307
 extract_feature(model=model, transform=transform, batch_size=64, model_name='mfn_epoch238_0.6') # 注意每次运行不同模型需要同时修改模型名称
 # merge_feature_sample(8, 3, 0.8, True) # line 321-322
 ```
-* 4.修改提取特征的保存位置
+* 4.设置提取特征的保存位置
 ```python
-hickle.dump(all_feature.numpy(), r'E:\data\reid\features/%s.feature.hkl' % (model_name)) # line 107
+features_save_path = r'' # line 25
 ```
 特征提取完毕之后，需要进行特征融合，步骤如下：
 * 1.取消merge_feature_sample方法的注释，同时注释掉extract_feature方法
  ```python
 # extract_feature(model=model, transform=transform, batch_size=64, model_name='mfn_epoch238_0.6') # 注意每次运行不同模型需要同时修改模型名称
 merge_feature_sample(8, 3, 0.8, True)
-```
-* 2.根据之前提取特征的保存位置修改加载特征的路径
-```python
-feature_files = [os.path.join(r'E:\data\reid\features', x) for x in os.listdir(r'E:\data\reid\features')] # line 149
 ```
 最终结果文件保存在当前目录的submission_B.json文件中
 
