@@ -64,7 +64,7 @@ extract_feature(model=model, transform=transform, batch_size=64, model_name='mfn
 ```
 * 4.设置提取特征的保存位置
 ```python
-features_save_path = r'' # line 25
+features_save_path = r'faetures' # line 25
 ```
 特征提取完毕之后，需要进行特征融合，步骤如下：
 * 1.取消merge_feature_sample方法的注释，同时注释掉extract_feature方法
