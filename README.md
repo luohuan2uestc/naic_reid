@@ -27,6 +27,7 @@
 
 # Tricks
 - [x] DataAugmention(RandomErase+ColorJittering+RandomHorizontallyFlip)
+- [x] WarmUp
 - [x] ArcFace
 - [x] BackBone resnet101_ibn_a
 - [x] Size 384*192
