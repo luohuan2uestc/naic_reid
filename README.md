@@ -20,6 +20,9 @@ This is the code for the compitition of NAIC
 * Pillow==6.2.1
 * skimage==0.0
 
+- [x] Strong Baseline
+- [x] MGN
+- [x] MFN
 
 ## prepare_data
 ### step 1 modify prepare_rep2.py
