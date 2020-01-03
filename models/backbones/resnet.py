@@ -90,7 +90,8 @@ class ResNet(nn.Module):
         return x
 
     def load_param(self, model_path):
-        param_dict = torch.load(model_path)
+        # param_dict = torch.load(model_path)
+        param_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
         for i in param_dict:
             if 'fc' in i:
                 continue

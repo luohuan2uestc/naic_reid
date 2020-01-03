@@ -115,6 +115,76 @@ class TripletLoss(object):
             loss = self.ranking_loss(dist_an - dist_ap, y)
         return loss
 
+class NegMixupTripletLoss(object):
+    """Modified from Tong Xiao's open-reid (https://github.com/Cysu/open-reid).
+    Related Triplet Loss theory can be found in paper 'In Defense of the Triplet
+    Loss for Person Re-Identification'."""
+
+    def __init__(self, margin=None,K1=4,K2=4):
+        self.margin = margin
+        self.K1 = K1
+        self.K2 = K2
+        if margin is not None:
+            self.ranking_loss = nn.MarginRankingLoss(margin=margin)
+        else:
+            self.ranking_loss = nn.SoftMarginLoss()
+
+    def __call__(self, global_feat, labels,mx_global_feats, normalize_feature=False):
+        if normalize_feature:
+            global_feat = normalize(global_feat, axis=-1)
+            mx_global_feats = normalize(mx_global_feats, axis=-1)
+        # slow
+
+        # n = global_feat.size(0)        
+        # # Compute pairwise distance, replace by the official when merged
+        # dist = torch.pow(global_feat, 2).sum(dim=1, keepdim=True).expand(n, n)
+        # dist = dist + dist.t()
+        # dist.addmm_(1, -2, global_feat, global_feat.t())
+        # dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
+        
+        # # For each anchor, find the hardest positive and negative
+        # mask = labels.expand(n, n).eq(labels.expand(n, n).t())
+        # dist_ap, dist_an = [], []
+        # for i in range(n):
+        #     dist_ap.append(dist[i][mask[i]].max().unsqueeze(0))
+        #     # extend dist an
+            
+        #     # dan = euclidean_dist(global_feat[i].view(1,-1),mx_global_feats[i//self.K1:i//self.K1+self.K2]).min().unsqueeze(0)
+        #     # dan = min(dan,dist[i][mask[i] == 0].min().unsqueeze(0))
+
+        #     dan = dist[i][mask[i] == 0].min().unsqueeze(0)
+        #     dist_an.append(dan)
+
+        # dist_ap = torch.cat(dist_ap)
+        # dist_an = torch.cat(dist_an)
+
+        # fast
+        dist_mat = euclidean_dist(global_feat, global_feat)
+        dist_ap, dist_an = hard_example_mining(dist_mat, labels)
+        # negative part
+        global_feat = global_feat.view((-1,self.K1,global_feat.size(-1)))
+        mx_global_feats = mx_global_feats.view((-1,self.K2,mx_global_feats.size(-1)))
+
+        x,y = global_feat,mx_global_feats
+
+        m, n = x.size(1), y.size(1)
+        xx = torch.pow(x, 2).sum(-1, keepdim=True).expand(-1,m, n)
+        yy = torch.pow(y, 2).sum(-1, keepdim=True).expand(-1,n, m).permute((0,2,1))
+        ex_dist_an = xx + yy
+        ex_dist_an -= 2*(x@y.permute((0,2,1)))
+        ex_dist_an = ex_dist_an.clamp(min=1e-12).sqrt()  # for numerical stability
+
+        ex_dist_an = ex_dist_an.view((-1,self.K2))
+
+        dist_an = torch.cat([dist_an.view(-1,1),ex_dist_an],dim=1).min(dim=1)[0]
+        # loss
+        y = dist_an.new().resize_as_(dist_an).fill_(1)
+        if self.margin is not None:
+            loss = self.ranking_loss(dist_an, dist_ap, y)
+        else:
+            loss = self.ranking_loss(dist_an - dist_ap, y)
+        return loss
+
 class CrossEntropyLabelSmooth(nn.Module):
     """Cross entropy loss with label smoothing regularizer.
 

@@ -16,18 +16,25 @@ from torch import nn
 import torch.nn.functional as F
 
 from .backbones.resnet import ResNet, Bottleneck
-from .backbones.resnet_ibn_a import resnet50_ibn_a
+from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
+from .backbones.resnext_ibn_a import resnext101_ibn_a
+from .layers.pooling import GeM,GlobalConcatPool2d,GlobalAttnPool2d,GlobalAvgAttnPool2d,GlobalMaxAttnPool2d,GlobalConcatAttnPool2d,AdaptiveGeM2d
 
 
 class MGN(nn.Module):
-    def __init__(self, num_classes, model_path, backbone='resnet50', pool_type='avg'):
+    def __init__(self, num_classes, model_path, last_stride=1,backbone='resnet50', pool_type='max',part_pool_type='max',use_center=False,num_share_layer3=1,use_bnbias=True):
         super(MGN, self).__init__()
 
+        self.use_center = use_center
         if backbone == "resnet50":
-            self.base = ResNet(last_stride=2)
+            self.base = ResNet(last_stride=last_stride)
         elif backbone == "resnet50_ibn_a":
-            self.base = resnet50_ibn_a(last_stride=2)
+            self.base = resnet50_ibn_a(last_stride=last_stride)
+        else:
+            self.base = eval(backbone)(last_stride=last_stride)
         self.base.load_param(model_path)
+
+  
         self.backbone = nn.Sequential(
             self.base.conv1,
             self.base.bn1,
@@ -35,38 +42,90 @@ class MGN(nn.Module):
             self.base.maxpool,
             self.base.layer1,
             self.base.layer2,
-            self.base.layer3[0],
+            self.base.layer3[:num_share_layer3]
         )
 
-        res_conv4 = nn.Sequential(*self.base.layer3[1:])
+        res_conv4 = nn.Sequential(*self.base.layer3[num_share_layer3:])
+
 
         res_g_conv5 = self.base.layer4
 
-        res_p_conv5 = nn.Sequential(
-            Bottleneck(1024, 512, downsample=nn.Sequential(nn.Conv2d(1024, 2048, 1, bias=False), nn.BatchNorm2d(2048))),
-            Bottleneck(2048, 512),
-            Bottleneck(2048, 512))
-        res_p_conv5.load_state_dict(self.base.layer4.state_dict())
-
+        res_p_conv5 = copy.deepcopy(self.base.layer4)
+        for n, m in res_p_conv5.named_modules():
+            if 'conv2' in n:
+                m.stride =  (1, 1)
+            elif 'downsample.0' in n:
+                m.stride = (1, 1)
+       
         self.p1 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_g_conv5))
         self.p2 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_p_conv5))
         self.p3 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_p_conv5))
 
-        if pool_type == 'max':
-            pool2d = nn.MaxPool2d
-        elif pool_type == 'avg':
-            pool2d = nn.AvgPool2d
+
+        if pool_type == "avg":
+            pool2d_p1 = nn.AdaptiveAvgPool2d(1)
+            pool2d_p2 = nn.AdaptiveAvgPool2d(1)
+            pool2d_p3 = nn.AdaptiveAvgPool2d(1)
+        elif pool_type == 'max':
+            pool2d_p1 = nn.AdaptiveMaxPool2d(1)
+            pool2d_p2 = nn.AdaptiveMaxPool2d(1)
+            pool2d_p3 = nn.AdaptiveMaxPool2d(1)
+        elif "gem" in pool_type:
+            if pool_type !='gem':
+                p = pool_type.split('_')[-1]
+                p = float(p)
+                pool2d_p1 = GeM(p=p, eps=1e-6, freeze_p=True)
+                pool2d_p2 = GeM(p=p, eps=1e-6, freeze_p=True)
+                pool2d_p3 = GeM(p=p, eps=1e-6, freeze_p=True)
+            else:
+                pool2d_p1 = GeM(eps=1e-6, freeze_p=False)
+                pool2d_p2 = GeM(eps=1e-6, freeze_p=False)
+                pool2d_p3 = GeM(eps=1e-6, freeze_p=False)
+
+        if part_pool_type == "avg":
+            pool2d_zp2 = nn.AdaptiveAvgPool2d((2,1))
+            pool2d_zp3 = nn.AdaptiveAvgPool2d((3,1))
+
+        elif part_pool_type == 'max':
+            pool2d_zp2 = nn.AdaptiveMaxPool2d((2,1))
+            pool2d_zp3 = nn.AdaptiveMaxPool2d((3,1))
+
+        elif "gem" in part_pool_type:
+            if part_pool_type !='gem':
+                p = part_pool_type.split('_')[-1]
+                p = float(p)
+                pool2d_zp2 = AdaptiveGeM2d(output_size=(2,1),p=p, eps=1e-6, freeze_p=True)
+                pool2d_zp3 = AdaptiveGeM2d(output_size=(3,1),p=p, eps=1e-6, freeze_p=True)
+
+            else:
+                pool2d_zp2 = AdaptiveGeM2d(output_size=(2,1),eps=1e-6, freeze_p=False)
+                pool2d_zp3 = AdaptiveGeM2d(output_size=(3,1),eps=1e-6, freeze_p=False)
+
+
+        self.maxpool_zg_p1 = pool2d_p1
+        self.maxpool_zg_p2 = pool2d_p2
+        self.maxpool_zg_p3 = pool2d_p3
+        self.maxpool_zp2 = pool2d_zp2
+        self.maxpool_zp3 = pool2d_zp3
+        
+        # if pool_type == 'max':
+        #     pool2d = nn.AdaptiveMaxPool2d
+        # elif pool_type == 'avg':
+        #     pool2d = nn.AdaptiveAvgPool2d
+        # else:
+        #     raise Exception()
+
+        # self.maxpool_zg_p1 = pool2d(output_size=(1, 1))
+        # self.maxpool_zg_p2 = pool2d(output_size=(1, 1))
+        # self.maxpool_zg_p3 = pool2d(output_size=(1, 1))
+        # self.maxpool_zp2 = pool2d(output_size=(2, 1))
+        # self.maxpool_zp3 = pool2d(output_size=(3, 1))
+
+        if use_bnbias:
+            reduction = nn.Sequential(nn.Conv2d(2048, 256, 1, bias=False), nn.BatchNorm2d(256),nn.PReLU(256, 0.25))
         else:
-            raise Exception()
-
-        self.maxpool_zg_p1 = pool2d(kernel_size=(12, 4))
-        self.maxpool_zg_p2 = pool2d(kernel_size=(24, 8))
-        self.maxpool_zg_p3 = pool2d(kernel_size=(24, 8))
-        self.maxpool_zp2 = pool2d(kernel_size=(12, 8))
-        self.maxpool_zp3 = pool2d(kernel_size=(8, 8))
-
-        reduction = nn.Sequential(nn.Conv2d(2048, 256, 1, bias=False), nn.BatchNorm2d(256),
-                                  nn.PReLU(256, 0.25))
+            reduction = nn.Sequential(nn.Conv2d(2048, 256, 1), nn.BatchNorm2d(256))
+            reduction[1].bias.requires_grad_(False)
 
         self._init_reduction(reduction)
         self.reduction_0 = copy.deepcopy(reduction)
@@ -117,7 +176,7 @@ class MGN(nn.Module):
 
     def forward(self, x):
 
-        x = self.backone(x)
+        x = self.backbone(x)
 
         p1 = self.p1(x)
         p2 = self.p2(x)
@@ -145,11 +204,6 @@ class MGN(nn.Module):
         f1_p3 = self.reduction_6(z1_p3).squeeze(dim=3).squeeze(dim=2)
         f2_p3 = self.reduction_7(z2_p3).squeeze(dim=3).squeeze(dim=2)
 
-        '''
-        l_p1 = self.fc_id_2048_0(zg_p1.squeeze(dim=3).squeeze(dim=2))
-        l_p2 = self.fc_id_2048_1(zg_p2.squeeze(dim=3).squeeze(dim=2))
-        l_p3 = self.fc_id_2048_2(zg_p3.squeeze(dim=3).squeeze(dim=2))
-        '''
         l_p1 = self.fc_id_2048_0(fg_p1)
         l_p2 = self.fc_id_2048_1(fg_p2)
         l_p3 = self.fc_id_2048_2(fg_p3)
@@ -162,6 +216,11 @@ class MGN(nn.Module):
 
         predict = torch.cat([fg_p1, fg_p2, fg_p3, f0_p2, f1_p2, f0_p3, f1_p3, f2_p3], dim=1)
         if self.training:
-            return fg_p1, fg_p2, fg_p3, l_p1, l_p2, l_p3, l0_p2, l1_p2, l0_p3, l1_p3, l2_p3
+            if self.use_center:
+                return fg_p1, fg_p2, fg_p3, \
+                        l_p1, l_p2, l_p3, l0_p2, l1_p2, l0_p3, l1_p3, l2_p3, \
+                        f0_p2, f1_p2, f0_p3, f1_p3, f2_p3
+            else:
+                return fg_p1, fg_p2, fg_p3, l_p1, l_p2, l_p3, l0_p2, l1_p2, l0_p3, l1_p3, l2_p3
         else:
             return predict

@@ -11,25 +11,28 @@
 import os
 import shutil
 import pandas as pd
+import numpy as np
 import random
 
 from dataset.data import read_image
 from skimage.io import imsave, imread
 from PIL import ImageFile, Image
-
+from tqdm import tqdm
 
 def process_dataset(txt_label, root_path, save_path):
+    os.makedirs(save_path,exist_ok=True)
     with open(txt_label, 'r') as f:
         lines = f.readlines()
-        for i, line in enumerate(lines):
-            data = line.split(" ")
-            image_name = data[0].split("/")[1]
-            pid = data[1].strip("\n")
-            if not os.path.exists(os.path.join(save_path, pid)):
-                os.mkdir(os.path.join(save_path, pid))
-            new_filename = pid+"_c"+str(i)+".png"
-            shutil.copy(os.path.join(root_path, image_name), os.path.join(os.path.join(save_path, pid), new_filename))
-
+        with tqdm(total = len(lines)) as pbar:
+            for i, line in enumerate(lines):
+                data = line.split(" ")
+                image_name = data[0].split("/")[1]
+                pid = data[1].strip("\n")
+                if not os.path.exists(os.path.join(save_path, pid)):
+                    os.mkdir(os.path.join(save_path, pid))
+                new_filename = pid+"_c"+str(i)+".png"
+                shutil.copy(os.path.join(root_path, image_name), os.path.join(os.path.join(save_path, pid), new_filename))
+                pbar.update(1)
 
 def dataset_analyse(root_path):
     pids = os.listdir(root_path)
@@ -45,85 +48,10 @@ def dataset_analyse(root_path):
 
 def split_dataset(root_path, train_path, query_path, gallery):
     pids = os.listdir(root_path)
-
     for pid in pids:
-
         imgs = os.listdir(os.path.join(root_path, pid))
-
         for img in imgs:
-            shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-            # k = k+1
-            # img1 = str(int(pid) + 6000)+"_"+str(k)+".jpg"
-            # shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img1))
-
-        # if len(imgs) > 100:
-        #     for img in imgs:
-        #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-        #
-        # elif len(imgs)<2:
-        #     for img in imgs:
-        #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
-        # # elif len(imgs) < 4:
-        # #     random.shuffle(imgs)
-        # #     for img in imgs[:1]:
-        # #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(query_path, img))
-        # #     for img in imgs[1:]:
-        # #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
-        # else:
-        #     for img in imgs:
-        #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-            # p = random.random()
-            # if p < 0.8:
-            #     for img in imgs:
-            #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-            # else:
-            #     random.shuffle(imgs)
-            #     for img in imgs[:1]:
-            #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(query_path, img))
-            #     for img in imgs[1:]:
-            #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
-
-        # if len(imgs) > 100:
-        #     for img in imgs:
-        #         shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-        #     # random.shuffle(imgs)
-        #     # for img in imgs[:int(0.7*len(imgs))]:
-        #     #     shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-        #     # for img in imgs[int(0.7 * len(imgs)):int(0.85 * len(imgs))]:
-        #     #     shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(query_path, img))
-        #     # for img in imgs[int(0.85 * len(imgs)):]:
-        #     #     shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
-        # elif len(imgs) < 2:
-        #     p = random.random()
-        #     if p < 0.8:
-        #         for img in imgs:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-        #     else:
-        #         for img in imgs:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
-        #
-        # elif len(imgs) < 5:
-        #     p = random.random()
-        #     if p < 0.8:
-        #         for img in imgs:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-        #     else:
-        #         random.shuffle(imgs)
-        #         for img in imgs[:1]:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(query_path, img))
-        #         for img in imgs[1:]:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
-        # else:
-        #     p = random.random()
-        #     if p < 0.8:
-        #         for img in imgs:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
-        #     else:
-        #         random.shuffle(imgs)
-        #         for img in imgs[:int(0.20*len(imgs))]:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(query_path, img))
-        #         for img in imgs[int(0.20*len(imgs)):]:
-        #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery, img))
+            shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img1))
 
 def mk_pseudo_data(root_path, txt_label, csv_data, save_path):
     query_dic = dict()
@@ -146,7 +74,61 @@ def mk_pseudo_data(root_path, txt_label, csv_data, save_path):
 
 
 if __name__ == "__main__":
-    pass
+    root_dir = '/data/Dataset/PReID/'
+    np.random.seed(491001)
+    save_dir = root_dir+'pre/'
+    process_dataset(root_dir+'train_list.txt',  root_dir+'train_set/',  save_dir+'all_dataset/')
+    root_path = save_dir+'all_dataset/'
+    trainVal_path = save_dir + 'trainVal/'
+    train_path = save_dir + 'train/'
+    train2_path = save_dir + 'train2/'
+
+    query_path = save_dir+'query/'
+    gallery_path = save_dir + 'gallery/'
+
+    os.makedirs(root_path,exist_ok=True)
+    os.makedirs(trainVal_path,exist_ok=True)
+    os.makedirs(train_path,exist_ok=True)
+    os.makedirs(train2_path,exist_ok=True)
+
+    os.makedirs(query_path,exist_ok=True)
+    os.makedirs(gallery_path,exist_ok=True)
+
+    pids = os.listdir(root_path)
+    pids = sorted(pids)
+    # trainVal
+    if 0:
+        for pid in pids:
+            imgs = os.listdir(os.path.join(root_path, pid))
+            for img in imgs:
+                shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(trainVal_path, img))
+    # train
+    np.random.shuffle(pids)
+    train_pids = pids[:int(len(pids)*0.85)]
+    val_pids = pids[int(len(pids)*0.85):]
+
+    for pid in train_pids:
+        imgs = os.listdir(os.path.join(root_path, pid))
+        if 0:
+            for img in imgs:
+                shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train_path, img))
+        if len(imgs)>=2:
+            for img in imgs:
+                shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(train2_path, img))
+    # img_id = 0
+    # for pid in val_pids:
+    #     imgs = os.listdir(os.path.join(root_path, pid))
+    #     imgs = sorted(imgs)
+    #     np.random.shuffle(imgs)
+    #     for img in imgs:
+    #         img_id+=1
+
+    #         if img_id % 5 == 0:
+    #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(query_path, img))
+    #         else:
+    #             shutil.copy(os.path.join(os.path.join(root_path, pid), img), os.path.join(gallery_path, img))
+
+
     # mk_pseudo_data(r'E:\data\reid\初赛A榜测试集\初赛A榜测试集\all', r'E:\data\reid\初赛A榜测试集\初赛A榜测试集/query_a_list.txt',
     #                r'E:\src\python\reid\true_pseudo_res.csv', r'E:\data\reid\初赛A榜测试集\初赛A榜测试集\pseudo_label')
     #
@@ -198,7 +180,7 @@ if __name__ == "__main__":
 
 
 
-    split_dataset(r'E:\data\reid\初赛训练集\初赛训练集\all_dataset', r'E:\data\reid\dataset10\train', r'E:\data\reid\dataset10\query',
-                  r'E:\data\reid\dataset10\gallery')
+    # split_dataset(r'E:\data\reid\gan\output', r'E:\data\reid\dataset9\train', r'E:\data\reid\dataset9\query',
+    #               r'E:\data\reid\dataset9\gallery')
     # dataset_analyse(r'E:\data\reid\初赛训练集\初赛训练集\all_dataset')
-    # process_dataset(r'E:\data\reid\初赛训练集\初赛训练集/train_list.txt', r'E:\data\reid\初赛训练集\初赛训练集\train_set', r'E:\data\reid\初赛训练集\初赛训练集\all_dataset')
+    # 

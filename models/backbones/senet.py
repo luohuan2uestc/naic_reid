@@ -1,3 +1,4 @@
+
 """
 ResNet code gently borrowed from
 https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
@@ -5,7 +6,7 @@ https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 from __future__ import print_function, division, absolute_import
 from collections import OrderedDict
 import math
-
+import torch
 import torch.nn as nn
 from torch.utils import model_zoo
 
@@ -208,7 +209,7 @@ class SENet(nn.Module):
 
     def __init__(self, block, layers, groups, reduction, dropout_p=0.2,
                  inplanes=128, input_3x3=True, downsample_kernel_size=3,
-                 downsample_padding=1, num_classes=1000):
+                 downsample_padding=1, last_stride=2):
         """
         Parameters
         ----------
@@ -314,7 +315,7 @@ class SENet(nn.Module):
             block,
             planes=512,
             blocks=layers[3],
-            stride=2,
+            stride=last_stride,
             groups=groups,
             reduction=reduction,
             downsample_kernel_size=downsample_kernel_size,
@@ -322,7 +323,7 @@ class SENet(nn.Module):
         )
         self.avg_pool = nn.AvgPool2d(7, stride=1)
         self.dropout = nn.Dropout(dropout_p) if dropout_p is not None else None
-        self.last_linear = nn.Linear(512 * block.expansion, num_classes)
+        self.last_linear = nn.Sequential()
 
     def _make_layer(self, block, planes, blocks, groups, reduction, stride=1,
                     downsample_kernel_size=1, downsample_padding=0):
@@ -344,27 +345,35 @@ class SENet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def features(self, x):
+    # def load_param(self, model_path):
+    #     param_dict = torch.load(model_path)
+    #     if 'state_dict' in param_dict.keys():
+    #         param_dict = param_dict['state_dict']
+    #     param_dict = {k: v for k, v in param_dict.items() if
+    #                   k in self.state_dict() and self.state_dict()[k].size() == v.size()}
+    #     for i in param_dict:
+    #         self.state_dict()[i].copy_(param_dict[i])
+
+    def load_param(self, model_path):
+        # param_dict = torch.load(model_path)
+        param_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
+        if 'state_dict' in param_dict.keys():
+            param_dict = param_dict['state_dict']
+
+        print('ignore_param:')
+        print([k for k, v in param_dict.items() if k not in self.state_dict() or self.state_dict()[k].size() != v.size()])
+        
+        param_dict = {k: v for k, v in param_dict.items() if k in self.state_dict() and self.state_dict()[k].size() == v.size()}
+        for i in param_dict:
+            self.state_dict()[i].copy_(param_dict[i])
+
+    def forward(self, x):
         x = self.layer0(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
         return x
-
-    def logits(self, x):
-        x = self.avg_pool(x)
-        if self.dropout is not None:
-            x = self.dropout(x)
-        x = x.view(x.size(0), -1)
-        x = self.last_linear(x)
-        return x
-
-    def forward(self, x):
-        x = self.features(x)
-        x = self.logits(x)
-        return x
-
 
 def initialize_pretrained_model(model, num_classes, settings):
     assert num_classes == settings['num_classes'], \
@@ -378,64 +387,59 @@ def initialize_pretrained_model(model, num_classes, settings):
     model.std = settings['std']
 
 
-def senet154(num_classes=1000, pretrained='imagenet'):
+def senet154( pretrained='imagenet'):
     model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,
-                  dropout_p=0.2, num_classes=num_classes)
+                  dropout_p=0.2)
     if pretrained is not None:
         settings = pretrained_settings['senet154'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)
     return model
 
 
-def se_resnet50(num_classes=1000, pretrained='imagenet'):
+def se_resnet50( pretrained='imagenet'):
     model = SENet(SEResNetBottleneck, [3, 4, 6, 3], groups=1, reduction=16,
                   dropout_p=None, inplanes=64, input_3x3=False,
-                  downsample_kernel_size=1, downsample_padding=0,
-                  num_classes=num_classes)
+                  downsample_kernel_size=1, downsample_padding=0)
     if pretrained is not None:
         settings = pretrained_settings['se_resnet50'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)
     return model
 
 
-def se_resnet101(num_classes=1000, pretrained='imagenet'):
+def se_resnet101( pretrained='imagenet'):
     model = SENet(SEResNetBottleneck, [3, 4, 23, 3], groups=1, reduction=16,
                   dropout_p=None, inplanes=64, input_3x3=False,
-                  downsample_kernel_size=1, downsample_padding=0,
-                  num_classes=num_classes)
+                  downsample_kernel_size=1, downsample_padding=0)
     if pretrained is not None:
         settings = pretrained_settings['se_resnet101'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)
     return model
 
 
-def se_resnet152(num_classes=1000, pretrained='imagenet'):
+def se_resnet152( pretrained='imagenet'):
     model = SENet(SEResNetBottleneck, [3, 8, 36, 3], groups=1, reduction=16,
                   dropout_p=None, inplanes=64, input_3x3=False,
-                  downsample_kernel_size=1, downsample_padding=0,
-                  num_classes=num_classes)
+                  downsample_kernel_size=1, downsample_padding=0)
     if pretrained is not None:
         settings = pretrained_settings['se_resnet152'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)
     return model
 
 
-def se_resnext50_32x4d(num_classes=1000, pretrained='imagenet'):
+def se_resnext50_32x4d(last_stride, pretrained=None):
     model = SENet(SEResNeXtBottleneck, [3, 4, 6, 3], groups=32, reduction=16,
                   dropout_p=None, inplanes=64, input_3x3=False,
-                  downsample_kernel_size=1, downsample_padding=0,
-                  num_classes=num_classes)
-    if pretrained is not None:
+                  downsample_kernel_size=1, downsample_padding=0,last_stride=last_stride)
+    if pretrained is not None: # 'imagenet'
         settings = pretrained_settings['se_resnext50_32x4d'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)
     return model
 
 
-def se_resnext101_32x4d(num_classes=1000, pretrained='imagenet'):
+def se_resnext101_32x4d( pretrained='imagenet'):
     model = SENet(SEResNeXtBottleneck, [3, 4, 23, 3], groups=32, reduction=16,
                   dropout_p=None, inplanes=64, input_3x3=False,
-                  downsample_kernel_size=1, downsample_padding=0,
-                  num_classes=num_classes)
+                  downsample_kernel_size=1, downsample_padding=0)
     if pretrained is not None:
         settings = pretrained_settings['se_resnext101_32x4d'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)

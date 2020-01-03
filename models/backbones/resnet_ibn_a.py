@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
-
+from ..layers.attention import SESTNLayer
 __all__ = ['ResNet_IBN', 'resnet50_ibn_a', 'resnet101_ibn_a',
            'resnet152_ibn_a']
 
@@ -85,7 +85,7 @@ class Bottleneck_IBN(nn.Module):
 
 class ResNet_IBN(nn.Module):
 
-    def __init__(self, last_stride, block, layers, num_classes=1000):
+    def __init__(self, last_stride, block, layers, num_classes=1000,use_sestn=False):
         scale = 64
         self.inplanes = scale
         super(ResNet_IBN, self).__init__()
@@ -100,6 +100,11 @@ class ResNet_IBN(nn.Module):
         self.layer4 = self._make_layer(block, scale * 8, layers[3], stride=last_stride)
         self.avgpool = nn.AvgPool2d(7)
         self.fc = nn.Linear(scale * 8 * block.expansion, num_classes)
+
+        self.use_sestn = use_sestn
+        if use_sestn:
+            self.sestn1 = SESTNLayer(256, 16)
+            self.sestn2 = SESTNLayer(512, 32)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -139,23 +144,47 @@ class ResNet_IBN(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
+        
+        if self.use_sestn:
+            x = self.sestn1(x)
+
         x = self.layer2(x)
+        if self.use_sestn:
+            x = self.sestn2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-
-        # x = self.avgpool(x)
-        # x = x.view(x.size(0), -1)
-        # x = self.fc(x)
-
         return x
 
-    def load_param(self, model_path):
-        param_dict = torch.load(model_path)
-        for i in param_dict:
-            if 'fc' in i:
-                continue
-            self.state_dict()[i].copy_(param_dict[i])
+    # def load_param(self, model_path):
+    #     # param_dict = torch.load(model_path)
+    #     param_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
+    #     for i in param_dict:
+    #         if 'fc' in i:
+    #             continue
+    #         self.state_dict()[i].copy_(param_dict[i])
 
+    def load_param(self, model_path):
+        param_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
+        if 'state_dict' in param_dict.keys():
+            param_dict = param_dict['state_dict']
+
+        
+        start_with_module = False
+        for k in param_dict.keys():
+            if k.startswith('module.'):
+                start_with_module = True
+                break
+        if start_with_module:
+            param_dict = {k[7:] : v for k, v in param_dict.items() }
+  
+        print('ignore_param:')
+        print([k for k, v in param_dict.items() if k not in self.state_dict() or self.state_dict()[k].size() != v.size()])
+        print('unload_param:')
+        print([k for k, v in self.state_dict().items() if k not in param_dict.keys() or param_dict[k].size() != v.size()] )
+
+        param_dict = {k: v for k, v in param_dict.items() if k in self.state_dict() and self.state_dict()[k].size() == v.size()}
+        for i in param_dict:
+            self.state_dict()[i].copy_(param_dict[i])
 
 def resnet50_ibn_a(last_stride, pretrained=False, **kwargs):
     """Constructs a ResNet-50 model.

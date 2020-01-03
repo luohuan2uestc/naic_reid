@@ -18,18 +18,18 @@ from .vistools import rank_list_to_im
 
 
 def calculate_acc(cfg, outputs, labels):
-    if cfg.MODEL.NAME == "baseline":
+    if cfg.MODEL.NAME in ["baseline","cosine_baseline"]:
         acc = (outputs[0].max(1)[1] == labels).float().mean()
-    elif cfg.MODEL.NAME == "mgn":
+    elif cfg.MODEL.NAME in ["mgn","mgn_bnneck",'cosinemgn','cosinemgn2d']:
         acc = 0.
-        for score in outputs[4:]:
+        for score in outputs[3:11]:
             _acc = (score.max(1)[1] == labels).float().mean()
             acc += _acc
-        acc = acc / 4.
-    elif cfg.MODEL.NAME == "mfn":
+        acc = acc / 8.
+    elif cfg.MODEL.NAME in ["mfn"]:
         acc = 0.
         for score in outputs[:4]:
-            _acc = (score.max(1)[1] == labels).float().mean()
+            _acc = (score[:labels.size()[0]].max(1)[1] == labels).float().mean()
             acc += _acc
         acc = acc / 4.
     elif cfg.MODEL.NAME == "pcb":

@@ -117,11 +117,17 @@ def inference_val(model,  transform, batch_size, feature_dim, k1=20, k2=6, p=0.3
 
 
 def inference_samples(model,  transform, batch_size, feature_dim, k1=20, k2=6, p=0.3, use_rerank=False):
-    query_list = [os.path.join(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\query_b\query_b', x) for x in
-                  os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\query_b\query_b')]
+    query_list = list()
+    with open(r'E:\data\reid\初赛A榜测试集\初赛A榜测试集/query_a_list.txt', 'r') as f:
+        lines = f.readlines()
+        for i, line in enumerate(lines):
+            data = line.split(" ")
+            image_name = data[0].split("/")[1]
+            img_file = os.path.join(r'E:\data\reid\初赛A榜测试集\初赛A榜测试集\query_a', image_name)
+            query_list.append(img_file)
 
-    gallery_list = [os.path.join(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b', x) for x in
-                    os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b')]
+    gallery_list = [os.path.join(r'E:\data\reid\初赛A榜测试集\初赛A榜测试集\gallery_a', x) for x in
+                    os.listdir(r'E:\data\reid\初赛A榜测试集\初赛A榜测试集\gallery_a')]
     query_num = len(query_list)
     img_list = list()
     for q_img in query_list:
@@ -144,7 +150,7 @@ def inference_samples(model,  transform, batch_size, feature_dim, k1=20, k2=6, p
         batch_data = img_data[i*batch_size:(i+1)*batch_size]
         with torch.no_grad():
 
-            ff = torch.FloatTensor(batch_data.size(0), feature_dim*2).zero_()
+            ff = torch.FloatTensor(batch_data.size(0), feature_dim).zero_()
             for i in range(2):
                 if i == 1:
                     batch_data = batch_data.index_select(3, torch.arange(batch_data.size(3) - 1, -1, -1).long())
@@ -152,19 +158,10 @@ def inference_samples(model,  transform, batch_size, feature_dim, k1=20, k2=6, p
                 outputs= model(batch_data)
 
                 f = outputs.data.cpu()
-                if i == 0:
-                    fnorm = torch.norm(f, p=2, dim=1, keepdim=True)
-                    f = f.div(fnorm.expand_as(f))
-                    ff[:, :feature_dim] = f
-                if i == 1:
-                    fnorm = torch.norm(f, p=2, dim=1, keepdim=True)
-                    f = f.div(fnorm.expand_as(f))
-                    ff[:, feature_dim:] = f
+                ff = ff + f
 
-            # ff = model(batch_data).data.cpu()
             fnorm = torch.norm(ff, p=2, dim=1, keepdim=True)
             ff = ff.div(fnorm.expand_as(ff))
-
             all_feature.append(ff)
     all_feature = torch.cat(all_feature)
     gallery_feat = all_feature[query_num:]
@@ -188,7 +185,7 @@ def inference_samples(model,  transform, batch_size, feature_dim, k1=20, k2=6, p
         max_200_files = [gallery_list[i][gallery_list[i].rindex("\\")+1:] for i in max_200_indices[q_idx]]
         res_dict[filename] = max_200_files
 
-    with open(r'submission_B.json', 'w' ,encoding='utf-8') as f:
+    with open(r'submission_A.json', 'w' ,encoding='utf-8') as f:
         json.dump(res_dict, f)
 
 
@@ -291,7 +288,7 @@ if __name__ == "__main__":
     from models import build_model
 
     model = build_model(cfg, 2772)
-    para_dict = torch.load(r'E:\data\reid\exp\mfn\jh/mfn_epoch245.pth')
+    para_dict = torch.load(r'E:\data\reid\output/mfn_epoch235.pth')
     model = torch.nn.DataParallel(model)
     model = convert_model(model)
     model.load_state_dict(para_dict)

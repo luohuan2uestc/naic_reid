@@ -22,6 +22,43 @@ def save(model, model_path):
 def load(model, model_path):
   model.load_state_dict(torch.load(model_path))
 
+# def make_optimizer(model,opt, lr,weight_decay,initial_lr,momentum=0.9):
+#     # params = []
+#     # for key, value in model.named_parameters():
+#     #     params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+#     # if opt == 'SGD':
+#     #     optimizer = getattr(torch.optim, opt)(params, momentum=momentum,nesterov=True)
+#     # elif opt == 'AMSGRAD':
+#     #     optimizer = getattr(torch.optim,'Adam')(params,amsgrad=True)
+#     # else:
+#     #     optimizer = getattr(torch.optim, opt)(params)
+#     # return optimizer
+#     if opt == 'SGD':
+#         optimizer = getattr(torch.optim, opt)([{'params': model.parameters(), 'initial_lr': initial_lr}],lr=lr,weight_decay=weight_decay, momentum=momentum,nesterov=True)
+#     elif opt == 'AMSGRAD':
+#         optimizer = getattr(torch.optim,'Adam')([{'params': model.parameters(), 'initial_lr': initial_lr}],lr=lr,weight_decay=weight_decay,amsgrad=True)
+#     else:
+#         optimizer = getattr(torch.optim, opt)([{'params': model.parameters(), 'initial_lr': initial_lr}],lr=lr,weight_decay=weight_decay)
+
+#     return optimizer
+def make_optimizer(model,opt, lr,weight_decay,momentum=0.9,nesterov=True):
+    if opt == 'SGD':
+        optimizer = getattr(torch.optim, opt)(model.parameters(),lr=lr,weight_decay=weight_decay, momentum=momentum,nesterov=nesterov)
+    elif opt == 'AMSGRAD':
+        optimizer = getattr(torch.optim,'Adam')(model.parameters(),lr=lr,weight_decay=weight_decay,amsgrad=True)
+    else:
+        optimizer = getattr(torch.optim, opt)(model.parameters(),lr=lr,weight_decay=weight_decay)
+    return optimizer
+
+def make_optimizer_partial(weights,opt, lr,weight_decay,momentum=0.9,nesterov=True):
+    if opt == 'SGD':
+        optimizer = getattr(torch.optim, opt)(weights,lr=lr,weight_decay=weight_decay, momentum=momentum,nesterov=nesterov)
+    elif opt == 'AMSGRAD':
+        optimizer = getattr(torch.optim,'Adam')(weights,lr=lr,weight_decay=weight_decay,amsgrad=True)
+    else:
+        optimizer = getattr(torch.optim, opt)(weights,lr=lr,weight_decay=weight_decay)
+    return optimizer
+
 
 class AvgerageMeter(object):
 

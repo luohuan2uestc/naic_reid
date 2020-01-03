@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 
+import datetime
 
 def setup_logger(name, save_dir, distributed_rank, train=True):
     logger = logging.getLogger(name)
@@ -18,8 +19,10 @@ def setup_logger(name, save_dir, distributed_rank, train=True):
     logger.addHandler(ch)
 
     if save_dir:
-        fh = logging.FileHandler(os.path.join(save_dir, "log.txt" if train else 'log_eval.txt'),
-                                mode='w')
+        name = "_log.txt" if train else '_log_eval.txt'
+        name = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') +name
+
+        fh = logging.FileHandler(os.path.join(save_dir, name),mode='w')
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
