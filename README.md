@@ -39,23 +39,20 @@ This is the code for the compitition of NAIC
 #### modify train sh file
 
 ```
-# PRETRAIN=../weights/resnet101_ibn_a.pth.tar
-# DATA_DIR='/data/Dataset/PReID/rep_dataset/'
-# SAVE_DIR='../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-testb_pseudo_retrain_arface_e66/' #(h, w)
+ PRETRAIN=../weights/resnet101_ibn_a.pth.tar
+ DATA_DIR='/data/Dataset/PReID/rep_dataset/'
+ SAVE_DIR='../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-testb_pseudo_retrain_arface_e66/' #(h, w)
 
-# CUDA_VISIBLE_DEVICES=5 python train.py --config_file='configs/naic/arcface_baseline.yml' \
-#     SOLVER.BASE_LR '3e-4' SOLVER.WARMUP_EPOCH "8" SOLVER.STEPS "[35, 55]" SOLVER.MAX_EPOCHS "66" SOLVER.START_SAVE_EPOCH "50" SOLVER.EVAL_PERIOD "2" \
-#     SOLVER.IMS_PER_BATCH "96" DATALOADER.NUM_INSTANCE "6" \
-#     MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
-#     INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
-#     MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
-#     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "/data/Dataset/PReID/testb_pseudo_hist_065_080_dataset/rep_trainVal2"\
-#     MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
-#     OUTPUT_DIR "('${SAVE_DIR}')" 
+ CUDA_VISIBLE_DEVICES=5 python train.py --config_file='configs/naic/arcface_baseline.yml' \
+     SOLVER.BASE_LR '3e-4' SOLVER.WARMUP_EPOCH "8" SOLVER.STEPS "[35, 55]" SOLVER.MAX_EPOCHS "66" SOLVER.START_SAVE_EPOCH "50" SOLVER.EVAL_PERIOD "2" \
+     SOLVER.IMS_PER_BATCH "96" DATALOADER.NUM_INSTANCE "6" \
+     MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
+     INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
+     MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
+     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "/data/Dataset/PReID/testb_pseudo_hist_065_080_dataset/rep_trainVal2"\
+     MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
+     OUTPUT_DIR "('${SAVE_DIR}')" 
 
-# PRETRAIN=../weights/resnet101_ibn_a.pth.tar
-# DATA_DIR='/data/Dataset/PReID/rep_dataset/'
-# SAVE_DIR='../rep_work_dirs/debug/' #(h, w)
 ```
 
 ### step 2
@@ -89,5 +86,52 @@ SAVE_DIR=${MODEL_DIR}eval/
 ### step 2
 #### run ./shells/rep_test_bl.sh
 
+## pseudo label
+### step1
+#### modify test sh file for pseudo label
+```
+# [20191231] testb pseudo
+
+QUERY_DIR=${ROOT_DIR}dataset2/rep_B/query_b/
+GALLERY_DIR=${ROOT_DIR}dataset2/rep_B/gallery_b/
+DATA_DIR=${ROOT_DIR}rep_dataset/
+PRETRAIN=../weights/resnet101_ibn_a.pth.tar
+MODEL_DIR=../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2/ #(h, w)
+WEIGHT=${MODEL_DIR}cosine_baseline_epoch90.pth
+SAVE_DIR=${MODEL_DIR}eval/
+
+
+ SAVE_DIR=${MODEL_DIR}sub/
+ CUDA_VISIBLE_DEVICES=2 python test2.py --config_file='configs/naic/arcface_baseline.yml' \
+     --sub \
+     --pseudo --pseudo_hist --pseudo_visual --pseudo_algorithm "auto" --pseudo_eps 0.55 --pseudo_minpoints 3 --pseudo_maxpoints 100 --pseudo_savepath '../rep_work_dirs/testb_pseudo_hist_065_080/'\
+     --query_dir ${QUERY_DIR}\
+     --gallery_dir ${GALLERY_DIR}\
+     MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" \
+     MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
+     INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
+     MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
+     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "rep_trainVal2"\
+     MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
+     OUTPUT_DIR "('${SAVE_DIR}')" \
+     TEST.WEIGHT "${WEIGHT}"
+```
+then you can get pseudo data in pseudo_savepath
+
+### step2
+#### copy pseudo data to trainVal data
+modify prepare_pseudo.py
+```python
+    root_dir = '/data/Dataset/PReID/'  # root of dataset
+    
+    origin_path = root_dir+'dataset2/'+'pid_dataset/' # original trainval data
+    pseudo_path = '../rep_work_dirs/testb_pseudo_hist_065_080/' # pseudo data
+
+    save_dir = root_dir+'testb_pseudo_hist_065_080_dataset/' # save path
+```
+run prepare_pseudo.py
+
+### step3
+#### train the model again using mix dataset(original trainval data and pseudo data)
 
 
