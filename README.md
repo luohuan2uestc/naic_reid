@@ -1,5 +1,5 @@
 # naic_reid
-# This is the Top19 Code for the Person ReID Compitition of NAIC(首届“全国人工智能大赛”（行人重识别 Person ReID 赛项）)
+# This is Top19 Code for the Person ReID Compitition of NAIC(首届“全国人工智能大赛”（行人重识别 Person ReID 赛项）)
 
 ### Dependencies
 * python==3.6
