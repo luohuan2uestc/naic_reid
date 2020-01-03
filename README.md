@@ -21,59 +21,73 @@ This is the code for the compitition of NAIC
 * skimage==0.0
 
 
-## Train
-step 1.  
-modify config.py  
-``` python 
-_C.MODEL.NAME = 'mfn' # model to choose 'mfn|mgn|baseline'
-_C.MODEL.NAME = 'resnet50_ibn_a' # backbone to choose ''resnet50|resnet50_ibn_a|'
-_C.MODEL.PRETRAIN_PATH = '' # path to pretained model
+## prepare_data
+### step 1    
+#### modify prepare_rep2.py
+```python
+    root_dir = '/data/Dataset/PReID/'  # dataset root
+    rep_dir = root_dir+'dataset2/'  # rep dataset
 
-_C.DATASETS.DATA_PATH = '' # path to dataset, which contains the train / query / gallery subfolder
-_C.DATALOADER.NUM_INSTANCE = 4 # K
-_C.OUTPUT_DIR = '' # path to save log file and model weights
+    save_dir = root_dir+'rep_dataset/' # save path
+```
+### step 2
+#### run prepare_rep2.py
+
+## Train
+
+### setp1
+#### modify train sh file
 
 ```
+# PRETRAIN=../weights/resnet101_ibn_a.pth.tar
+# DATA_DIR='/data/Dataset/PReID/rep_dataset/'
+# SAVE_DIR='../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-testb_pseudo_retrain_arface_e66/' #(h, w)
 
-setp 2.  
-run main.py  
+# CUDA_VISIBLE_DEVICES=5 python train.py --config_file='configs/naic/arcface_baseline.yml' \
+#     SOLVER.BASE_LR '3e-4' SOLVER.WARMUP_EPOCH "8" SOLVER.STEPS "[35, 55]" SOLVER.MAX_EPOCHS "66" SOLVER.START_SAVE_EPOCH "50" SOLVER.EVAL_PERIOD "2" \
+#     SOLVER.IMS_PER_BATCH "96" DATALOADER.NUM_INSTANCE "6" \
+#     MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
+#     INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
+#     MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
+#     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "/data/Dataset/PReID/testb_pseudo_hist_065_080_dataset/rep_trainVal2"\
+#     MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
+#     OUTPUT_DIR "('${SAVE_DIR}')" 
+
+# PRETRAIN=../weights/resnet101_ibn_a.pth.tar
+# DATA_DIR='/data/Dataset/PReID/rep_dataset/'
+# SAVE_DIR='../rep_work_dirs/debug/' #(h, w)
+```
+
+### step 2
+#### run ./shells/rep_train_bl.sh
+
 
 ## Test
-single model  
-run inference.py  
-multi models  
-run inference_muti_model.py  
-运行inference_multi_model.py时需要先下载网盘中的16个模型，
-先分别利用这16个模型提取特征，然后将特征进行拼接融合
-提取特征的步骤为：
-* 1.先修改测试数据路径
-```python
-query_list = [os.path.join(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\query_b\query_b', x) for x in
-                os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\query_b\query_b')]
-gallery_list = [os.path.join(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b', x) for x in
-                os.listdir(r'E:\data\reid\初赛B榜测试集\初赛B榜测试集\gallery_b\gallery_b')]  # line 56-59
-```
-* 2.修改模型路径
-```python
-para_dict = torch.load(r'E:\data\reid\exp\hg/mfn_epoch238.pth') # line 307
-```
-* 3.取消extract_feature方法的注释，同时注释掉merge_feature_sample方法
-```python
-extract_feature(model=model, transform=transform, batch_size=64, model_name='mfn_epoch238_0.6') # 注意每次运行不同模型需要同时修改模型名称
-# merge_feature_sample(8, 3, 0.8, True) # line 321-322
-```
-* 4.设置提取特征的保存位置
-```python
-features_save_path = r'features' # line 25
-```
-特征提取完毕之后，需要进行特征融合，步骤如下：
-* 1.取消merge_feature_sample方法的注释，同时注释掉extract_feature方法
- ```python
-# extract_feature(model=model, transform=transform, batch_size=64, model_name='mfn_epoch238_0.6') # 注意每次运行不同模型需要同时修改模型名称
-merge_feature_sample(8, 3, 0.8, True)
-```
-最终结果文件保存在当前目录的submission_B.json文件中
+### step1
+#### modify test sh file
 
-最终融合了两种0.6,0.5margin的mfn模型训练后期的模型，一共16个，下载百度云链接：链接: https://pan.baidu.com/s/1zlo-LwxGpPB6SYczp2K4wQ 提取码: bfkg
+```
+DATA_DIR=${ROOT_DIR}rep_dataset/
+PRETRAIN=../weights/resnet101_ibn_a.pth.tar
+MODEL_DIR=../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-testb_pseudo_retrain_arface_e66/ #(h, w)
+WEIGHT=${MODEL_DIR}cosine_baseline_epoch66.pth
+SAVE_DIR=${MODEL_DIR}eval/
+ 
+   --flip \
+   --aqe --aqe_k2 7 --aqe_alpha 3.0 \
+ CUDA_VISIBLE_DEVICES=2 python test2.py --config_file='configs/naic/arcface_baseline.yml' \
+     TEST.IMS_PER_BATCH "128" TEST.RANDOMPERM "5" \
+     MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
+     INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
+     MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
+     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "/data/Dataset/PReID/testb_pseudo_hist_065_080_dataset/rep_trainVal2"\
+     MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
+     OUTPUT_DIR "('${SAVE_DIR}')" \
+     TEST.WEIGHT "${WEIGHT}"
+```
+
+### step 2
+#### run ./shells/rep_test_bl.sh
+
 
 
