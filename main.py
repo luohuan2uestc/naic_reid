@@ -22,6 +22,8 @@ from trainer import BaseTrainer
 os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 
 
+# Test commit
+
 def main():
     output_dir = cfg.OUTPUT_DIR
     if output_dir and not os.path.exists(output_dir):
