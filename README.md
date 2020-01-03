@@ -25,6 +25,18 @@
 - [x] MGN
 - [x] MFN
 
+# Tricks
+- [x] DataAugmention(RandomErase+ColorJittering+RandomHorizontallyFlip)
+- [x] ArcFace
+- [x] BackBone resnet101_ibn_a
+- [x] Size 384*192
+- [x] TripleLoss+SoftmaxLoss
+- [x] AQE
+- [x] Batch GPU ReRanking
+- [x] Pseudo Label + Ensemble
+- [x] Multi Triple-Margine Ensemble
+
+
 ## prepare_data
 ### step 1 modify prepare_rep2.py
 ```python
