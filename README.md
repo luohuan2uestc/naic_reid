@@ -125,4 +125,22 @@ then you can get pseudo data in pseudo_savepath
 
 ### step3 train the model again using mix dataset(original trainval data and pseudo data)
 
+## Model Ensemble
+### step1 modify dist_ensemble.py
+```python
+ save_dir = '../rep_work_dirs/testb_ensembles/'  # save path
+ query_dir='/data/Dataset/PReID/dataset2/query_/' # query path
+ gallery_dir='/data/Dataset/PReID/dataset2/gallery_/' # gallery path
+ save_fname = 'ensemble1.json' # submit filename
+ dist_fnames = [  ## distance matrix
+    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2/sub/origin_tpl03_e90_flip_sub_aqe.pkl',
+    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2/sub/origin_tpl03_e80_flip_sub_aqe.pkl',
+
+    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-finetune_tpl05/sub/finetune_tpl05_e16_flip_sub_aqe.pkl',
+    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-finetune_tpl05/sub/finetune_tpl05_e14_flip_sub_aqe.pkl'
+
+    # ]
+```
+
+### step2 run dist_ensemble.py
 
