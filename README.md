@@ -22,18 +22,18 @@ This is the code for the compitition of NAIC
 
 
 ## prepare_data
-### step 1#### modify prepare_rep2.py
+### step 1 modify prepare_rep2.py
 ```python
     root_dir = '/data/Dataset/PReID/'  # dataset root
     rep_dir = root_dir+'dataset2/'  # rep dataset
 
     save_dir = root_dir+'rep_dataset/' # save path
 ```
-### step 2#### run prepare_rep2.py
+### step 2 run prepare_rep2.py
 
 ## Train
 
-### setp1#### modify train sh file
+### setp1 modify train sh file
 
 ```
  PRETRAIN=../weights/resnet101_ibn_a.pth.tar
@@ -52,11 +52,11 @@ This is the code for the compitition of NAIC
 
 ```
 
-### step 2#### run ./shells/rep_train_bl.sh
+### step 2 run ./shells/rep_train_bl.sh
 
 
 ## Test
-### step1#### modify test sh file
+### step1 modify test sh file
 
 ```
 DATA_DIR=${ROOT_DIR}rep_dataset/
@@ -78,10 +78,10 @@ SAVE_DIR=${MODEL_DIR}eval/
      TEST.WEIGHT "${WEIGHT}"
 ```
 
-### step 2#### run ./shells/rep_test_bl.sh
+### step 2 run ./shells/rep_test_bl.sh
 
 ## pseudo label
-### step1#### modify test sh file for pseudo label
+### step1 modify test sh file for pseudo label
 ```
 # [20191231] testb pseudo
 
@@ -111,8 +111,8 @@ SAVE_DIR=${MODEL_DIR}eval/
 ```
 then you can get pseudo data in pseudo_savepath
 
-### step2#### copy pseudo data to trainVal data
-modify prepare_pseudo.py
+### step2 copy pseudo data to trainVal data
+#### modify prepare_pseudo.py
 ```python
     root_dir = '/data/Dataset/PReID/'  # root of dataset
     
@@ -121,8 +121,8 @@ modify prepare_pseudo.py
 
     save_dir = root_dir+'testb_pseudo_hist_065_080_dataset/' # save path
 ```
-run prepare_pseudo.py
+#### run prepare_pseudo.py
 
-### step3#### train the model again using mix dataset(original trainval data and pseudo data)
+### step3 train the model again using mix dataset(original trainval data and pseudo data)
 
 
