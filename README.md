@@ -163,6 +163,9 @@ then you can get pseudo data in pseudo_savepath
 
 ## Notes:
 1.Due to time constraints, the best solution we eventually adopted was to use a baseline model and a pseudo-labeled baseline model for fusion.  
+&nbsp;  
 2.We also trained MGN to a better effect, but the final effect of mgn is not as good as the baseline + arcface + cj effect.  
+&nbsp;  
 3.The MFN network comes from one of my teammates, and he plans to use the model in a paper. So it cannot be open source now. If you are interested, you can follow his Github：https://github.com/douzi0248/Re-ID  
+&nbsp;  
 4.Thanks for [Hao Luo](https://github.com/michuanhaohao "Hao Luo") and [DTennant](https://github.com/DTennant "DTennant"), our baseline model comes from https://github.com/michuanhaohao/reid-strong-baseline and https://github.com/DTennant/reid_baseline_with_syncbn
