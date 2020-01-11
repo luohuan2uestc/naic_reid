@@ -26,8 +26,8 @@
 - [x] MFN
 
 # Tricks
-- [x] DataAugmention(RandomErase+ColorJittering+RandomHorizontallyFlip)
-- [x] WarmUp
+- [x] DataAugmention(RandomErase + ColorJittering + RandomHorizontallyFlip)
+- [x] WarmUp + MultiStepLR 
 - [x] ArcFace
 - [x] BackBone resnet101_ibn_a
 - [x] Size 384*192
@@ -35,7 +35,7 @@
 - [x] AQE
 - [x] Batch GPU ReRanking
 - [x] Pseudo Label + Ensemble
-- [x] Multi Triple-Margine Ensemble
+- [x] Multi Triplet-Margine Ensemble
 
 
 ## prepare_data
