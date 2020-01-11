@@ -37,9 +37,13 @@
 - [x] Size 384*192
 - [x] TripleLoss+SoftmaxLoss
 - [x] AQE
+- [x] adabn
+- [x] gem
 - [x] Batch GPU ReRanking
 - [x] Pseudo Label + Ensemble
 - [x] Multi Triplet-Margine Ensemble
+
+
 
 
 ## prepare_data
@@ -57,9 +61,9 @@
 ### setp1 modify train sh file
 
 ```
- PRETRAIN=../weights/resnet101_ibn_a.pth.tar
- DATA_DIR='/data/Dataset/PReID/rep_dataset/'
- SAVE_DIR='../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-testb_pseudo_retrain_arface_e66/' #(h, w)
+ PRETRAIN=resnet101_ibn_a.pth.tar
+ DATA_DIR='your data dir'
+ SAVE_DIR='your save dir' #(h, w)
 
  CUDA_VISIBLE_DEVICES=5 python train.py --config_file='configs/naic/arcface_baseline.yml' \
      SOLVER.BASE_LR '3e-4' SOLVER.WARMUP_EPOCH "8" SOLVER.STEPS "[35, 55]" SOLVER.MAX_EPOCHS "66" SOLVER.START_SAVE_EPOCH "50" SOLVER.EVAL_PERIOD "2" \
@@ -67,7 +71,7 @@
      MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
      INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
      MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
-     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "/data/Dataset/PReID/testb_pseudo_hist_065_080_dataset/rep_trainVal2"\
+     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "your train data folder"\
      MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
      OUTPUT_DIR "('${SAVE_DIR}')" 
 
@@ -80,9 +84,9 @@
 ### step1 modify test sh file
 
 ```
-DATA_DIR=${ROOT_DIR}rep_dataset/
-PRETRAIN=../weights/resnet101_ibn_a.pth.tar
-MODEL_DIR=../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-testb_pseudo_retrain_arface_e66/ #(h, w)
+DATA_DIR= 'your data dir'
+PRETRAIN=resnet101_ibn_a.pth.tar
+MODEL_DIR=your model dir #(h, w)
 WEIGHT=${MODEL_DIR}cosine_baseline_epoch66.pth
 SAVE_DIR=${MODEL_DIR}eval/
  
@@ -93,7 +97,7 @@ SAVE_DIR=${MODEL_DIR}eval/
      MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
      INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
      MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
-     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "/data/Dataset/PReID/testb_pseudo_hist_065_080_dataset/rep_trainVal2"\
+     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "your train data folder"\
      MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
      OUTPUT_DIR "('${SAVE_DIR}')" \
      TEST.WEIGHT "${WEIGHT}"
@@ -110,7 +114,7 @@ QUERY_DIR=${ROOT_DIR}dataset2/rep_B/query_b/
 GALLERY_DIR=${ROOT_DIR}dataset2/rep_B/gallery_b/
 DATA_DIR=${ROOT_DIR}rep_dataset/
 PRETRAIN=../weights/resnet101_ibn_a.pth.tar
-MODEL_DIR=../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2/ #(h, w)
+MODEL_DIR=your model dir #(h, w)
 WEIGHT=${MODEL_DIR}cosine_baseline_epoch90.pth
 SAVE_DIR=${MODEL_DIR}eval/
 
@@ -154,11 +158,10 @@ then you can get pseudo data in pseudo_savepath
  gallery_dir='/data/Dataset/PReID/dataset2/gallery_/' # gallery path
  save_fname = 'ensemble1.json' # submit filename
  dist_fnames = [  ## distance matrix
-    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2/sub/origin_tpl03_e90_flip_sub_aqe.pkl',
-    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2/sub/origin_tpl03_e80_flip_sub_aqe.pkl',
-
-    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-finetune_tpl05/sub/finetune_tpl05_e16_flip_sub_aqe.pkl',
-    #     '../rep_work_dirs/exp4-cosinebaseline-resnet101ibnls1-384x192-bs16x6-warmup10-flip-pad10-meanstd-erase0502-nolbsm-avg-arcface30_035_10033-cj05-trainVal2-finetune_tpl05/sub/finetune_tpl05_e14_flip_sub_aqe.pkl'
+    #     'origin_tpl03_e90_flip_sub_aqe.pkl',
+    #     'origin_tpl03_e80_flip_sub_aqe.pkl',
+    #     'finetune_tpl05_e16_flip_sub_aqe.pkl',
+    #     'finetune_tpl05_e14_flip_sub_aqe.pkl'
 
     # ]
 ```
