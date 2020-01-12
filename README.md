@@ -44,8 +44,8 @@
 - [x] Pseudo Label + Ensemble
 - [x] Multi Triplet-Margine Ensemble
 
-| model | size | backbone | trick |  performance  |
-|------|------|------|
+| model | size | backbone | trick |  performance |
+|------|------|------|------|
 | mgn | 384x128 | resnet50-ibna | adabn + gem | 0.77808439 |
 | mgn | 384x144 | resnet50-ibna | adabn + gem | 0.78023715 |
 | mgn | 384x144 | resnet50-ibna | adabn + gem + aqe | 0.78967123 |
