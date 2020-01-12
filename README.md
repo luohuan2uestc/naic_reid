@@ -63,6 +63,7 @@
 | :-----| ----: | :----: | :----: | :----: |
 | mgn | 384x128 | resnet50-ibna | adabn + gem | 0.77808439 |
 | mgn | 384x144 | resnet50-ibna | adabn + gem | 0.78023715 |
+| mgn | 384x144 | resnet50-ibna | adabn + gem + aqe | 0.78967123 |
 
 
 
