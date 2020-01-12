@@ -59,6 +59,12 @@
 | baseline | 384x192 | resnet101-ibna | avg + arcfaceface + cj05 + all_data | 0.819 |
 
 
+| 左对齐 | 右对齐 | 居中对齐 |
+| :-----| ----: | :----: |
+| 单元格 | 单元格 | 单元格 |
+| 单元格 | 单元格 | 单元格 |
+
+
 
 
 ## prepare_data
