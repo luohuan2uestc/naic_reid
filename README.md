@@ -64,6 +64,14 @@
 | mgn | 384x128 | resnet50-ibna | adabn + gem | 0.77808439 |
 | mgn | 384x144 | resnet50-ibna | adabn + gem | 0.78023715 |
 | mgn | 384x144 | resnet50-ibna | adabn + gem + aqe | 0.78967123 |
+| mgn | 384x144 | resnet50-ibna | gem + aqe + cj | 0.79911998 |
+| baseline | 384x192 | resnet50-ibna | adabn + gem + cosface | 0.76778309 |
+| baseline | 384x192 | resnet50-ibna | gem + cosface + cj | 0.79208766 |
+| baseline | 384x192 | resnet50-ibna | avg + cosface + cj | 0.79478573 |
+| baseline | 384x192 | resnet101-ibna | avg + cosface + cj | 0.80346376 |
+| baseline | 384x192 | resnet101-ibna | avg + cosface + cj + all_data | 0.80577292 |
+| baseline | 384x192 | resnet101-ibna | avg + cosface + cj05 + all_data | 0.80686313 |
+| baseline | 384x192 | resnet101-ibna | avg + arcfaceface + cj05 + all_data | 0.819 |
 
 
 
