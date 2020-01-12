@@ -45,7 +45,7 @@
 - [x] Multi Triplet-Margine Ensemble
 
 
-
+## A 榜
 | model | size | backbone | trick | performance |
 | :-----| ----: | :----: | :----: | :----: |
 | mgn | 384x128 | resnet50-ibna | adabn + gem | 0.77808439 |
@@ -60,7 +60,15 @@
 | baseline | 384x192 | resnet101-ibna | avg + cosface + cj05 + all_data | 0.80686313 |
 | baseline | 384x192 | resnet101-ibna | avg + arcfaceface + cj05 + all_data | 0.819 |
 
+| baseline | 384x192 | resnet101-ibna | avg + arcfaceface + cj05 + all_data | 0.819 |
 
+## B 榜 public
+| model | size | backbone | trick | performance |
+| :-----| ----: | :----: | :----: | :----: |
+| baseline | 384x192 | resnet50-ibna | (avg + arcfaceface + cj05 + all_data) + (avg + arcfaceface + cj05 + all_data + pseudo label) ensemble | 0.81488409 |
+
+## B 榜 private 
+0.80066173
 
 
 ## prepare_data
