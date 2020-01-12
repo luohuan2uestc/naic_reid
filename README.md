@@ -59,10 +59,10 @@
 | baseline | 384x192 | resnet101-ibna | avg + arcfaceface + cj05 + all_data | 0.819 |
 
 
-| 左对齐 | 右对齐 | 居中对齐 | 居中对齐 |
-| :-----| ----: | :----: | :----: |
-| 单元格 | 单元格 | 单元格 | 单元格 |
-| 单元格 | 单元格 | 单元格 | 单元格 |
+| model | size | backbone | trick | performance |
+| :-----| ----: | :----: | :----: | :----: |
+| mgn | 384x128 | resnet50-ibna | adabn + gem | 0.77808439 |
+| mgn | 384x144 | resnet50-ibna | adabn + gem | 0.78023715 |
 
 
 
