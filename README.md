@@ -65,7 +65,7 @@ In order to run this project you will need:
 3. Adabn can improve mfn performance and baseline with arccos, but there is no improvement in baeline with arcface.
 4. Batch GPU ReRanking is modified from the original rerank, using the GPU to calculate the distance, and using sparse matrix storage, which can save memory and time.But due to the limitation of test B submission, this method was not adopted in the end.
 5. Pseudo Label is a trick commonly used in deep learning competitions.We use a trained model to cluster the test set, and the clustering method we choose is dbscan which has two hyperparameters to control the clustering effect.
-6. Multi Triplet-Margine Ensemble means ensemble two models with different triplet loss margin.(we choose 0.5 and 0.3)
+6. Multi Triplet-Margine Ensemble means ensemble two models with different triplet loss margin (we choose 0.5 and 0.3). Due to time constraints, we gave up the trick in the test B.
 
 
 
