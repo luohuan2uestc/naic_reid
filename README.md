@@ -53,7 +53,7 @@ In order to run this project you will need:
 - [x] BackBone resnet101_ibn_a
 - [x] Size 384*192
 - [x] TripleLoss+SoftmaxLoss
-- [x] AQE
+- [x] AQE(GPU only cost 20s for test a)
 - [x] adabn
 - [x] gem
 - [x] all data training(not include single pid image)
