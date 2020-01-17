@@ -25,10 +25,16 @@ you can find the compition at https://www.kesci.com/home/competition/5d90401cd8f
 
 In order to run this project you will need:
 
-1. Python3 (tested with Python 3.6.0)
+- Python3 (tested with Python 3.6.0)
 - PyTorch deep learning framework (tested with version 1.0.0)
 - rep dataset contains almost 86k train images and 71k test images for test A, 166k for test B, so the training phase requires ~24GB GPU memory. If your GPU doesn't have sufficient memory, please reduce batch size or reduce image train-size.
 
+# Team members
+- [whxin](https://github.com/whut2962575697 "whxin") 
+- [John-Yao](https://github.com/John-Yao "John-Yao")
+- [gogozhu](https://github.com/gogozhu "gogozhu")
+- [dbofseuofhust](https://github.com/dbofseuofhust "dbofseuofhust")
+- [douzi](https://github.com/douzi0248/Re-ID   "douzi") 
 
 # Support
 - [x] Multi-GPU and SyncBN
@@ -54,23 +60,30 @@ In order to run this project you will need:
 - [x] Pseudo Label (dbscan) + Ensemble
 - [x] Multi Triplet-Margine Ensemble
 
+1. Due to the characteristics of the data set, we find Color Jittering can greatly improve model performance.And at the same time we find that using Color Jittering with a 0.5 probability is better.
+2. AQE(average query expansion) can replace rerank as a post-processing method, which can imporve evaluation indicators by 1%~2%.There are two aqe methods in our codes, one is based on cpu and the other is based on gpu, which can speed up about 10 times.
+3. Adabn can improve mfn performance and baseline with arccos, but there is no improvement in baeline with arcface.
+4. Batch GPU ReRanking is modified from the original rerank, using the GPU to calculate the distance, and using sparse matrix storage, which can save memory and time.But due to the limitation of test B submission, this method was not adopted in the end.
+5. Pseudo Label is a trick commonly used in deep learning competitions.We use a trained model to cluster the test set, and the clustering method we choose is dbscan which has two hyperparameters to control the clustering effect.
+6. Multi Triplet-Margine Ensemble means ensemble two models with different triplet loss margin.(we choose 0.5 and 0.3)
+
 
 
 
 ## A 榜
 | model | size | backbone | trick | performance |
 | :-----| ----: | :----: | :----: | :----: |
-| mgn | 384x128 | resnet50-ibna | adabn + gem | 0.77808439 |
-| mgn | 384x144 | resnet50-ibna | adabn + gem | 0.78023715 |
-| mgn | 384x144 | resnet50-ibna | adabn + gem + aqe | 0.78967123 |
-| mgn | 384x144 | resnet50-ibna | gem + aqe + cj | 0.79911998 |
-| baseline | 384x192 | resnet50-ibna | adabn + gem + cosface | 0.76778309 |
-| baseline | 384x192 | resnet50-ibna | gem + cosface + cj | 0.79208766 |
-| baseline | 384x192 | resnet50-ibna | avg + cosface + cj | 0.79478573 |
-| baseline | 384x192 | resnet101-ibna | avg + cosface + cj | 0.80346376 |
-| baseline | 384x192 | resnet101-ibna | avg + cosface + cj + all_data | 0.80577292 |
-| baseline | 384x192 | resnet101-ibna | avg + cosface + cj05 + all_data | 0.80686313 |
-| baseline | 384x192 | resnet101-ibna | avg + arcfaceface + cj05 + all_data | 0.819 |
+| mgn | 384x128 | resnet50-ibn | adabn + gem | 0.77808439 |
+| mgn | 384x144 | resnet50-ibn | adabn + gem | 0.78023715 |
+| mgn | 384x144 | resnet50-ibn | adabn + gem + aqe | 0.78967123 |
+| mgn | 384x144 | resnet50-ibn | gem + aqe + cj | 0.79911998 |
+| baseline | 384x192 | resnet50-ibn | adabn + gem + cosface | 0.76778309 |
+| baseline | 384x192 | resnet50-ibn | gem + cosface + cj | 0.79208766 |
+| baseline | 384x192 | resnet50-ibn | avg + cosface + cj | 0.79478573 |
+| baseline | 384x192 | resnet101-ibn | avg + cosface + cj | 0.80346376 |
+| baseline | 384x192 | resnet101-ibn | avg + cosface + cj + all_data | 0.80577292 |
+| baseline | 384x192 | resnet101-ibn | avg + cosface + cj05 + all_data | 0.80686313 |
+| baseline | 384x192 | resnet101-ibn | avg + arcfaceface + cj05 + all_data | 0.819 |
 
 
 ## B 榜 public
