@@ -46,7 +46,7 @@ In order to run this project you will need:
 - [x] MFN(Comming Soon)
 
 # Tricks
-- [x] DataAugmention(RandomErase + ColorJittering + RandomHorizontallyFlip)
+- [x] DataAugmention(RandomErase + ColorJittering + RandomHorizontallyFlip + Padding + RandomCrop)
 - [x] WarmUp + MultiStepLR 
 - [x] PxK = 16x6 (Batch Size = 96)
 - [x] ArcFace
@@ -61,7 +61,7 @@ In order to run this project you will need:
 - [x] Pseudo Label (dbscan) + Ensemble
 - [x] Multi Triplet-Margine Ensemble
 
-1. Due to the characteristics of the data set, we find Color Jittering can greatly improve model performance.And at the same time we find that using Color Jittering with a 0.5 probability is better.
+1. Due to the characteristics of the dataset, we find Color Jittering can greatly improve model performance.And at the same time we find that using Color Jittering with a 0.5 probability is better.
 2. AQE(average query expansion) can replace rerank as a post-processing method, which can imporve evaluation indicators by 1%~2%.There are two aqe methods in our codes, one is based on cpu and the other is based on gpu, which can speed up about 10 times.
 3. Adabn can improve mfn performance and baseline with arccos, but there is no improvement in baeline with arcface.
 4. Batch GPU ReRanking is modified from the original rerank, using the GPU to calculate the distance, and using sparse matrix storage, which can save memory and time.But due to the limitation of test B submission, this method was not adopted in the end.
