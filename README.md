@@ -90,7 +90,7 @@ In order to run this project you will need:
 ## Test B public
 | model | size | backbone | trick | performance |
 | :-----| ----: | :----: | :----: | :----: |
-| baseline | 384x192 | resnet50-ibna | (avg + arcfaceface + cj05 + all_data) + (avg + arcfaceface + cj05 + all_data + pseudo label) ensemble | 0.81488409 |
+| baseline | 384x192 | resnet101-ibn | (avg + arcfaceface + cj05 + all_data) + (avg + arcfaceface + cj05 + all_data + pseudo label) ensemble | 0.81488409 |
 
 ## Test B private 
 0.80066173
