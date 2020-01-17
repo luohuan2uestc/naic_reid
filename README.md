@@ -48,6 +48,7 @@ In order to run this project you will need:
 # Tricks
 - [x] DataAugmention(RandomErase + ColorJittering + RandomHorizontallyFlip)
 - [x] WarmUp + MultiStepLR 
+- [x] P*K = 16*6 (Batch Size = 96)
 - [x] ArcFace
 - [x] BackBone resnet101_ibn_a
 - [x] Size 384*192
