@@ -71,7 +71,7 @@ In order to run this project you will need:
 
 
 
-## A 榜
+## Test A 
 | model | size | backbone | trick | performance |
 | :-----| ----: | :----: | :----: | :----: |
 | mgn | 384x128 | resnet50-ibn | adabn + gem | 0.77808439 |
@@ -87,12 +87,12 @@ In order to run this project you will need:
 | baseline | 384x192 | resnet101-ibn | avg + arcfaceface + cj05 + all_data | 0.819 |
 
 
-## B 榜 public
+## Test B public
 | model | size | backbone | trick | performance |
 | :-----| ----: | :----: | :----: | :----: |
 | baseline | 384x192 | resnet50-ibna | (avg + arcfaceface + cj05 + all_data) + (avg + arcfaceface + cj05 + all_data + pseudo label) ensemble | 0.81488409 |
 
-## B 榜 private 
+## Test B private 
 0.80066173
 
 
