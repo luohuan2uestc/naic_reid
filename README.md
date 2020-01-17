@@ -20,6 +20,16 @@
 * Pillow==6.2.1
 * skimage==0.0
 
+# Prerequisites
+you can find the compition at https://www.kesci.com/home/competition/5d90401cd8fc4f002da8e7be/content/2
+
+In order to run this project you will need:
+
+11. Python3 (tested with Python 3.6.0)
+- PyTorch deep learning framework (tested with version 1.0.0)
+- rep dataset contains almost 86k train images and 71k test images for test A, 166k for test B, so the training phase requires ~24GB GPU memory. If your GPU doesn't have sufficient memory, please reduce batch size or reduce image train-size.
+
+
 # Support
 - [x] Multi-GPU and SyncBN
 - [x] fp16
@@ -41,8 +51,10 @@
 - [x] gem
 - [x] all data training(not include single pid image)
 - [x] Batch GPU ReRanking
-- [x] Pseudo Label + Ensemble
+- [x] Pseudo Label (dbscan) + Ensemble
 - [x] Multi Triplet-Margine Ensemble
+
+
 
 
 ## A 榜
@@ -70,7 +82,18 @@
 0.80066173
 
 
+
+
+# Implementation
 ## prepare_data
+you can put th data in rep_dir, and get the result data in save_dir
+### split 0.85 train data
+1、train minist2 data (0.85 train data (each pid >=2))
+2、train data (0.85 train data)
+3、train minist4 data (0.85 train data (each pid >=4))
+### all train data
+1、trainVal2 data (all train data (each pid >= 2))
+2、trainVal data (all train data)
 ### step 1 modify prepare_rep2.py
 ```python
     root_dir = '/data/Dataset/PReID/'  # dataset root
@@ -81,6 +104,7 @@
 ### step 2 run prepare_rep2.py
 
 ## Train
+for baseline model, you can choose arccos baseline or arcface baseline by modifing 'MODEL.BASELINE.COSINE_LOSS_TYPE'
 
 ### setp1 modify train sh file
 
@@ -88,14 +112,16 @@
  PRETRAIN=resnet101_ibn_a.pth.tar
  DATA_DIR='your data dir'
  SAVE_DIR='your save dir' #(h, w)
-
+ TRAIN_PATH='your train folder'
+ QUERY_PATH='your query folder'
+ GALLERY_PATH='your gallery folder'
  CUDA_VISIBLE_DEVICES=5 python train.py --config_file='configs/naic/arcface_baseline.yml' \
      SOLVER.BASE_LR '3e-4' SOLVER.WARMUP_EPOCH "10" SOLVER.STEPS "[40, 70]" SOLVER.MAX_EPOCHS "90" SOLVER.START_SAVE_EPOCH "75" SOLVER.EVAL_PERIOD "2" \
      SOLVER.IMS_PER_BATCH "96" DATALOADER.NUM_INSTANCE "6" \
      MODEL.BASELINE.TPL_WEIGHT "1.0" MODEL.BASELINE.CE_WEIGHT "0.33" MODEL.LABEL_SMOOTH "False" MODEL.BASELINE.S "30.0" MODEL.BASELINE.M "0.35" MODEL.BASELINE.COSINE_LOSS_TYPE 'ArcCos' \
      INPUT.SIZE_TRAIN "([384,192])" INPUT.SIZE_TEST "([384,192])" \
      MODEL.NAME "cosine_baseline" MODEL.BACKBONE "('resnet101_ibn_a')" MODEL.BASELINE.POOL_TYPE "avg"\
-     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "your train data folder"\
+     DATASETS.DATA_PATH "('${DATA_DIR}')" DATASETS.TRAIN_PATH "('${TRAIN_PATH}')" DATASETS.QUERY_PATH "('${QUERY_PATH}')"        DATASETS.GALLERY_PATH "('${GALLERY_PATH}')"\
      MODEL.PRETRAIN_PATH "('${PRETRAIN}')"  \
      OUTPUT_DIR "('${SAVE_DIR}')" 
 
