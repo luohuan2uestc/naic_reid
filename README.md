@@ -101,12 +101,12 @@ In order to run this project you will need:
 ## prepare_data
 you can put th data in rep_dir, and get the result data in save_dir
 ### split 0.85 train data
-1、train minist2 data (0.85 train data (each pid >=2))
-2、train data (0.85 train data)
-3、train minist4 data (0.85 train data (each pid >=4))
+1. train minist2 data (0.85 train data (each pid >=2))
+2. train data (0.85 train data)
+3. train minist4 data (0.85 train data (each pid >=4))
 ### all train data
-1、trainVal2 data (all train data (each pid >= 2))
-2、trainVal data (all train data)
+1. trainVal2 data (all train data (each pid >= 2))
+2. trainVal data (all train data)
 ### step 1 modify prepare_rep2.py
 ```python
     root_dir = '/data/Dataset/PReID/'  # dataset root
