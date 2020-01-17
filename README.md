@@ -25,7 +25,7 @@ you can find the compition at https://www.kesci.com/home/competition/5d90401cd8f
 
 In order to run this project you will need:
 
-11. Python3 (tested with Python 3.6.0)
+1. Python3 (tested with Python 3.6.0)
 - PyTorch deep learning framework (tested with version 1.0.0)
 - rep dataset contains almost 86k train images and 71k test images for test A, 166k for test B, so the training phase requires ~24GB GPU memory. If your GPU doesn't have sufficient memory, please reduce batch size or reduce image train-size.
 
