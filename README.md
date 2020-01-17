@@ -100,7 +100,7 @@ In order to run this project you will need:
 
 # Implementation
 ## prepare_data
-you can put th data in rep_dir, and get the result data in save_dir
+you can put the data in rep_dir, and get the result data in save_dir
 ### split 0.85 train data
 1. train minist2 data (0.85 train data (each pid >=2))
 2. train data (0.85 train data)
